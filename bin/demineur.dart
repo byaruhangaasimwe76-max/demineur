@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:ansicolor/ansicolor.dart';
 import 'package:demineur/demineur.dart';
@@ -11,31 +12,39 @@ void main(List<String> arguments) {
   int tailleGrille = largeurGrille * hauteurGrille;
   int nombreMines = 5;
 
-  //TODO initialiser la grille
+  // TODO initialiser la grille
 
   final penVert = AnsiPen()..green();
+  final penBleu = AnsiPen()..blue();
+  final penRouge = AnsiPen()..red();
 
   var grille = genererGrille(largeurGrille, hauteurGrille, nombreMines);
   var cellulesActives = List<bool>.generate(tailleGrille, (i) => false);
 
   while (execution) {
-    //TODO nettoyer l'ecran
     stdout.write('\x1B[2J\x1B[0;0H');
-    print("-=-=-=-=-=-=-=-=-=");
-    print("-    DEMINEUR    -");
-    print("-=-=-=-=-=-=-=-=-=");
-    //TODO afficher le dernier coup joué ou un message d'erreur ou le message de Game Over
+    print("-=-=-=-=-=-=-=-=-=-=-");
+    print("-      DEMINEUR     -");
+    print("-=-=-=-=-=-=-=-=-=-=-");
+    // TODO afficher le dernier coup joué ou un message d'erreur ou le message de Game Over
     if (choixUtilisateur != null) {
       print("dernier coup: ${penVert(choixUtilisateur)}");
     }
-    //TODO afficher la grille
-    afficherGrille(largeurGrille, hauteurGrille, grille, cellulesActives);
-    //TODO informer l'utilisateur il peut jouer
+    afficherGrille(
+      largeurGrille,
+      hauteurGrille,
+      grille,
+      cellulesActives,
+      penVert,
+      penBleu,
+      penRouge,
+    );
+    // TODO informer l'utilisateur qu'il peut jouer
     stdout.write(penVert("Saisissez votre coup (cl) ou q pour quitter: "));
     choixUtilisateur = stdin.readLineSync();
     choixUtilisateur = choixUtilisateur?.toLowerCase();
     if (choixUtilisateur == null) {
-      print("Erreur");
+      print("erreur");
       continue;
     }
     execution = choixUtilisateur != "q";
@@ -45,14 +54,26 @@ void main(List<String> arguments) {
       continue;
     }
 
-    var col = choixUtilisateur[0].codeUnitAt(0) - 97;
+    var col = choixUtilisateur.codeUnitAt(0) - 97;
     var ligne = int.parse(choixUtilisateur[1]) - 1;
+
+    if (col < 0) {
+      stdout.writeln("[Erreur]: choix invalide");
+      continue;
+    }
+
     var index = ligne * largeurGrille + col;
 
     if (index > tailleGrille) {
       stdout.writeln("[Erreur]: choix invalide");
       continue;
     }
-    cellulesActives[index] = true;
+    activerCellules(
+      index,
+      largeurGrille,
+      hauteurGrille,
+      grille,
+      cellulesActives,
+    );
   }
 }
